@@ -3,16 +3,20 @@
 import { useUser } from "@/context/user/useUser";
 import {
   AttachMoney,
+  ChevronLeft,
+  ChevronRight,
   Home,
+  Menu as MenuIcon,
   People,
   Person,
-  Settings,
+  Work,
 } from "@mui/icons-material";
 import {
   AppBar,
   Box,
   Divider,
   Drawer,
+  IconButton,
   List,
   ListItem,
   ListItemButton,
@@ -20,25 +24,37 @@ import {
   ListItemText,
   Toolbar,
   Typography,
+  useTheme,
 } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 import { useState } from "react";
+import UserPage from "../../components/userSection";
+import EmployeeSection from "../../components/employeeSection";
+import AdminEmployeeSection from "../../components/employeeSection";
+import { useAdmin } from "@/context/admin/useAdmin";
+import AdminProjectSection from "@/app/components/projectSection";
 
-export default function Dashboard() {
+export default function AdminDashboard() {
   const drawerWidth = 240;
+  const theme = useTheme()
   const [selectedItem, setSelectedItem] = useState(0);
-  const { user } = useUser();
+  const [openDrawer, setOpenDrawer] = useState(false)
+  const { admin } = useAdmin()
   const items = {
     0: "Dashboard",
     1: "Finance",
     2: "Human Resource",
-    3: "User",
-    4: "Settings",
+    3: "Projects",
+    4: "User",
   };
 
   const handleListItemClick = (event, index) => {
     setSelectedItem(index);
   };
+
+  const handleDrawer = () => {
+    setOpenDrawer(!openDrawer)
+  }
 
   const sec2 = [
     {
@@ -49,28 +65,44 @@ export default function Dashboard() {
       text: "Human Resource",
       icon: <People />,
     },
+    {
+      text: "Projects",
+      icon: <Work />
+    }
   ];
 
   const sec3 = [
     {
       text: "User",
       icon: <Person />,
-    },
-    {
-      text: "Settings",
-      icon: <Settings />,
+
     },
   ];
 
   return (
-    <Box sx={{ display: "flex" }}>
+    <Box sx={{ display: "flex", maxWidth: '100vw' }}>
       <CssBaseline />
       <AppBar
         position="fixed"
-        sx={{ width: `calc(100% - ${drawerWidth}px)`, ml: `${drawerWidth}px` }}
+        sx={{ width: openDrawer ? `calc(100% - ${drawerWidth}px)` : '100%' }}
       >
         <Toolbar>
-          <Typography variant="h6" noWrap component="div">
+          <IconButton
+            color="inherit"
+            aria-label="Open Drawer"
+            onClick={handleDrawer}
+            edge="start"
+            sx={[
+              {
+                mr: 2,
+              },
+              openDrawer && { display: 'none' }
+            ]}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Box sx={{ width: '0.5em' }} />
+          <Typography variant="h5" noWrap component="div">
             {selectedItem == 0
               ? "Dashboard"
               : selectedItem == 1
@@ -78,8 +110,8 @@ export default function Dashboard() {
                 : selectedItem == 2
                   ? "Human Resource"
                   : selectedItem == 3
-                    ? "User"
-                    : "Settings"}
+                    ? "Projects"
+                    : selectedItem == 4 && "User"}
           </Typography>
         </Toolbar>
       </AppBar>
@@ -92,10 +124,16 @@ export default function Dashboard() {
             boxSizing: "border-box",
           },
         }}
-        variant="permanent"
+        onClose={handleDrawer}
+        variant="temporary"
         anchor="left"
+        open={openDrawer}
       >
         <Toolbar>
+          <IconButton onClick={handleDrawer}>
+            {theme.direction === 'ltr' ? <ChevronLeft /> : <ChevronRight />}
+          </IconButton>
+          <Box sx={{ width: '1em' }} />
           <Typography>PulseERP</Typography>
         </Toolbar>
         <List>
@@ -138,8 +176,8 @@ export default function Dashboard() {
             {sec3.map((obj, index) => (
               <ListItem key={index} disablePadding>
                 <ListItemButton
-                  selected={selectedItem == index + 3}
-                  onClick={(event) => handleListItemClick(event, index + 3)}
+                  selected={selectedItem == index + 4}
+                  onClick={(event) => handleListItemClick(event, index + 4)}
                 >
                   <ListItemIcon>{obj.icon}</ListItemIcon>
                   <ListItemText primary={obj.text} />
@@ -151,8 +189,18 @@ export default function Dashboard() {
       </Drawer>
       <Box>
         <Toolbar />
-        <Box padding={2}>
-          <Typography> Welcome {user.name}</Typography>
+        <Box padding={2} sx={{ display: 'flex', flexDirection: 'column', width: '100vw ', }}>
+          {admin && (<Typography>
+            Admin is {admin.name}
+          </Typography>)}
+
+          {selectedItem == 2 && (
+            <>
+              <AdminEmployeeSection />
+              <AdminProjectSection />
+            </>
+          )}
+          {selectedItem == 4 && <UserPage />}
         </Box>
       </Box>
     </Box>

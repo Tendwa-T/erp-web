@@ -4,11 +4,14 @@ import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { Box, Tab, Typography } from "@mui/material";
 import { useState } from "react";
 import SignIn from "./authentication/signin/page";
-import SignUp from "./authentication/signup/page";
 import { useUser } from "@/context/user/useUser";
-import Dashboard from "./dashboard/page";
+import Dashboard from "./dashboard/admin/page";
+import ResetPassword from "./authentication/resetPass/page";
+import AdminDashboard from "./dashboard/admin/page";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const router = useRouter();
   const [tabVal, setTabVal] = useState("1");
   const handleChangeTab = (event, newVal) => {
     setTabVal(newVal);
@@ -16,7 +19,7 @@ export default function HomePage() {
   const { user } = useUser();
 
   return (
-    <Box>
+    <>
       {user.token == null ? (
         <Box
           sx={{
@@ -33,22 +36,24 @@ export default function HomePage() {
             <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
               <TabList onChange={handleChangeTab}>
                 <Tab label="Sign In" value="1" />
-                <Tab label="Sign Up" value="2" />
               </TabList>
             </Box>
             <TabPanel value="1">
               <SignIn />
             </TabPanel>
-            <TabPanel value="2">
-              <SignUp />
-            </TabPanel>
           </TabContext>
+        </Box>
+      ) : user.resetRequired ? (
+        () => router.push("authentication/resetPass")
+      ) : user.role === "employee" ? (
+        <Box>
+          <Typography>UserPage </Typography>
         </Box>
       ) : (
         <Box>
-          <Dashboard />
+          <AdminDashboard />
         </Box>
       )}
-    </Box>
+    </>
   );
 }

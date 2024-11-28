@@ -5,6 +5,8 @@ import { UserProvider } from "@/context/user/UserContext";
 import { ThemeProvider } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 import theme from "@/theme/theme";
+import { AdminProvider } from "@/context/admin/AdminContext";
+import { ProjectProvider } from "@/context/projects/ProjectContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -29,12 +31,16 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <UserProvider>
-          <AppRouterCacheProvider>
-            <ThemeProvider theme={theme}>
-              <CssBaseline />
-              {children}
-            </ThemeProvider>
-          </AppRouterCacheProvider>
+          <AdminProvider>
+            <ProjectProvider>
+              <AppRouterCacheProvider>
+                <ThemeProvider theme={theme}>
+                  <CssBaseline />
+                  {children}
+                </ThemeProvider>
+              </AppRouterCacheProvider>
+            </ProjectProvider>
+          </AdminProvider>
         </UserProvider>
       </body>
     </html>
