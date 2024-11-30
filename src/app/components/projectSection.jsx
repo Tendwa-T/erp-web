@@ -2,7 +2,7 @@
 
 import { useUser } from "@/context/user/useUser";
 
-import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Chip, IconButton, Paper, Slide, Snackbar, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import AddEmployee from "./forms/addEmployee";
 import { useEffect, useState } from "react";
 import { Delete, ExpandMore } from "@mui/icons-material";
@@ -13,6 +13,25 @@ export default function AdminProjectSection() {
     const { user } = useUser();
     const { projects, fetchProjects, deleteProject } = useProject()
     const [pageData, setPageData] = useState(projects)
+    const [snack, setSnack] = useState({
+        open: false,
+        message: "Default message",
+        success: null,
+        transition: SlideTransition(),
+    });
+
+
+    function SlideTransition(props) {
+        return <Slide {...props} direction="left" />;
+    }
+
+    function handleClose() {
+        setSnack({
+            ...snack,
+            open: false,
+        });
+    }
+
 
 
     let ksh = new Intl.NumberFormat("en-KE", {
@@ -69,10 +88,10 @@ export default function AdminProjectSection() {
                                                 <TableCell component={'th'} scope="row">
                                                     {row.name}
                                                 </TableCell>
-                                                <TableCell align="center">{row.email}</TableCell>
-                                                <TableCell align="center">{row.department}</TableCell>
-                                                <TableCell align="center">{row.role}</TableCell>
-                                                <TableCell align="center"><Chip label={row.status} color={row.status === "active" ? "success" : "error"} /></TableCell>
+                                                <TableCell align="center">{row.description}</TableCell>
+                                                <TableCell align="center">{row.startDate.split('T')[0]}</TableCell>
+                                                <TableCell align="center">{row.endDate.split('T')[0]}</TableCell>
+                                                <TableCell align="center">{row.status}</TableCell>
                                                 <TableCell align="center"> <Box>
                                                     <IconButton color="error" onClick={async () => {
                                                         await deleteProject(row._id)
@@ -92,6 +111,20 @@ export default function AdminProjectSection() {
                     </Paper>
                 </AccordionDetails>
             </Accordion>
+            <Snackbar
+                open={snack.open}
+                onClose={handleClose}
+                TransitionComponent={snack.Transition}
+                key={"Reg-Snack"}
+                autoHideDuration={1200}
+            >
+                <Alert
+                    onClose={handleClose}
+                    severity={snack.success ? "success" : "error"}
+                >
+                    {snack.message}
+                </Alert>
+            </Snackbar>
         </Box >
     );
 }

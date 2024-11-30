@@ -33,6 +33,7 @@ import EmployeeSection from "../../components/employeeSection";
 import AdminEmployeeSection from "../../components/employeeSection";
 import { useAdmin } from "@/context/admin/useAdmin";
 import AdminProjectSection from "@/app/components/projectSection";
+import AdminFinanceSection from "@/app/components/financeSection";
 
 export default function AdminDashboard() {
   const drawerWidth = 240;
@@ -193,13 +194,16 @@ export default function AdminDashboard() {
           {admin && (<Typography>
             Admin is {admin.name}
           </Typography>)}
+          {selectedItem == 1 && (
+            <AdminFinanceSection />
+          )}
 
           {selectedItem == 2 && (
             <>
               <AdminEmployeeSection />
-              <AdminProjectSection />
             </>
           )}
+          {selectedItem == 3 && <AdminProjectSection />}
           {selectedItem == 4 && <UserPage />}
         </Box>
       </Box>

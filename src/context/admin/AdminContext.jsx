@@ -40,6 +40,7 @@ export function AdminProvider({ children }) {
         })
 
         const resBod = await res.json()
+        await fetchEmployees()
         return resBod;
 
     }

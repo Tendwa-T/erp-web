@@ -1,19 +1,12 @@
 
-import { useAdmin } from "@/context/admin/useAdmin";
 import { useBudget } from "@/context/budget/useBudget";
-import { useProject } from "@/context/projects/useProject";
 import { Add } from "@mui/icons-material";
-import { Alert, Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, MenuItem, Slide, Snackbar, TextField, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, MenuItem, Slide, Snackbar, TextField, Typography } from "@mui/material";
+import { useState } from "react";
 
-export default function AddProject() {
+export default function AddBudget() {
     const [openModal, setOpenModal] = useState(false)
-    const { createProject, fetchProjects } = useProject()
-    const { budgets, expenses, fetchExpenses, fetchBudgets } = useBudget()
-    const { employees, fetchEmployees } = useAdmin()
-    const [assignedEmployees, setAssignedEmployees] = useState([])
-    const [projMilestones, setProjectMilestones] = useState([])
-    const [projStatus, setProjStatus] = useState("Ongoing")
+    const { createBudget, fetchBudgets } = useBudget()
     const toggleModal = () => {
         setOpenModal(!openModal)
     }
@@ -23,8 +16,6 @@ export default function AddProject() {
         success: null,
         transition: SlideTransition(),
     });
-
-
     function SlideTransition(props) {
         return <Slide {...props} direction="left" />;
     }
@@ -37,12 +28,6 @@ export default function AddProject() {
     }
 
 
-    useEffect(() => {
-        fetchBudgets()
-        fetchExpenses()
-        fetchEmployees()
-    }, [])
-
     return (
         <>
             <Button
@@ -51,7 +36,7 @@ export default function AddProject() {
                 sx={{ borderRadius: 2 }}
             >
                 <Add />
-                Add Project
+                Add Budget
             </Button>
             <Dialog
                 open={openModal}
@@ -63,40 +48,55 @@ export default function AddProject() {
                         event.preventDefault()
                         const formData = new FormData(event.currentTarget)
                         const formJson = Object.fromEntries(formData.entries())
-                        const { name,
-                            description,
-                            budget,
-                            milestones,
-                            expenses,
-                            startDate,
-                            endDate,
-                            status,
-                            employees,
-                        } = formJson;
-                        const proj = await createProject({
+                        const {
                             name,
                             description,
-                            budget,
-                            milestones,
-                            expenses,
+                            department,
+                            category,
+                            allocatedAmount,
+                            spentAmount,
                             startDate,
                             endDate,
                             status,
-                            employees: assignedEmployees.map((emp) => emp._id)
+                        } = formJson;
+                        const bud = await createBudget({
+                            name: `${new Date().getFullYear()}-${new Date().getMonth()}-${new Date().getDate()}-${name.replace(/\s+/g, '-')}`,
+                            description,
+                            department,
+                            category,
+                            allocatedAmount,
+                            spentAmount,
+                            startDate,
+                            endDate,
+                            status,
                         })
-                        setOpenModal(false);
-                        await fetchProjects()
-                        return proj
+                        if (bud.success === false) {
+                            setSnack({
+                                open: true,
+                                message: bud.message,
+                                success: false,
+                            })
+                            return
+                        } else {
+                            setSnack({
+                                open: true,
+                                message: bud.message,
+                                success: true,
+                            })
+                            toggleModal()
+                        }
+                        await fetchBudgets()
+                        return bud
                     },
                 }}
             >
 
                 <DialogTitle variant="h4" textAlign={'center'}>
-                    Add a Project
+                    Add a Budget
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText textAlign={'center'}>
-                        Use this form to enter data for a new Project
+                        Use this form to enter data for a new Budget
                     </DialogContentText>
                 </DialogContent>
                 <Box sx={{ display: 'flex', px: 2, }}>
@@ -105,10 +105,10 @@ export default function AddProject() {
                         margin="dense"
                         id="name"
                         name='name'
-                        label='Project Name'
+                        label='Budget Name'
                         type='text'
                         fullWidth
-                        helperText="Must be Unique to This project"
+                        helperText="Must be Unique to This Budget"
                     />
                 </Box>
                 <Box sx={{ display: 'flex', px: 2 }}>
@@ -117,7 +117,7 @@ export default function AddProject() {
                         margin="dense"
                         id="description"
                         name='description'
-                        label='Project Description'
+                        label='Budget Description'
                         type='text'
                         multiline
                         fullWidth
@@ -128,103 +128,45 @@ export default function AddProject() {
                     <TextField
                         required
                         margin="dense"
-                        id="budget"
-                        name='budget'
-                        label='Project Budget'
+                        id="department"
+                        name='department'
+                        label='Budget Department'
                         fullWidth
                         defaultValue=""
-                        select
-                        slotProps={{
-                            select: {
-                                native: true
-                            }
-                        }}
-
-                    >
-                        {budgets.map((samp, index) => {
-
-                            return (
-                                <MenuItem component={"option"} key={index} value={samp._id}>
-                                    {samp.name}
-                                </MenuItem>
-                            )
-                        })}
-                    </TextField>
-                    <Box sx={{ width: '3em' }} />
-
-
-                </Box>
-                <Box sx={{ display: 'flex', px: 2 }}>
-                    <Autocomplete
-                        fullWidth
-                        multiple
-                        id="employees"
-                        name='employees'
-                        options={employees}
-                        getOptionLabel={employee => employee.name}
-                        value={assignedEmployees}
-                        onChange={(event, newValue) => {
-                            setAssignedEmployees(newValue)
-                        }}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                id="employees"
-                                name='employees'
-                                label="Assigned Employees"
-                                placeholder="Employees"
-                            />
-                        )}
+                        type='text'
                     />
-
                     <Box sx={{ width: '3em' }} />
                     <TextField
+                        required
                         margin="dense"
-                        id="status"
-                        name='status'
-                        label='Status'
-                        defaultValue={"Ongoing"}
-                        type='text'
+                        id="category"
+                        name='category'
+                        label='Budget Category'
                         fullWidth
-                        select
-                        value={projStatus}
-                        onChange={(e) => {
-                            setProjStatus(e.target.value)
-                        }}
-                    >
-                        {["Ongoing", "Completed", "On Hold"].map((item, index) => (
-                            <MenuItem component={'option'} key={index} value={item}>
-                                {item}
-                            </MenuItem>
-                        ))}
-                    </TextField>
+                        defaultValue=""
+                        type='text'
+                    />
+
                 </Box>
                 <Box sx={{ display: 'flex', px: 2 }}>
                     <TextField
                         required
                         margin="dense"
-                        id="expenses"
-                        name='expenses'
-                        label='Expenses'
+                        id="allocatedAmount"
+                        name='allocatedAmount'
+                        label='Allocated Amount'
+                        type='number'
                         fullWidth
-                        defaultValue=""
-                        select
-                        slotProps={{
-                            select: {
-                                native: true
-                            }
-                        }}
-                    >
-                        {expenses.map((samp, index) => {
-                            return (
-                                <MenuItem component={"option"} key={index} value={samp._id}>
-                                    {samp.name}
-                                </MenuItem>
-                            )
-                        })}
-                    </TextField>
-
-
+                    />
+                    <Box sx={{ width: '3em' }} />
+                    <TextField
+                        margin="dense"
+                        id="spentAmount"
+                        name='spentAmount'
+                        label='Spent Amount'
+                        type='number'
+                        fullWidth
+                    />
                 </Box>
                 <Box sx={{ display: 'flex', px: 2 }}>
                     <TextField
@@ -268,7 +210,7 @@ export default function AddProject() {
             <Snackbar
                 open={snack.open}
                 onClose={handleClose}
-                TransitionComponent={snack.Transition}
+                TransitionComponent={snack.transition}
                 key={"Reg-Snack"}
                 autoHideDuration={1200}
             >

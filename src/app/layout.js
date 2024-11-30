@@ -7,6 +7,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import theme from "@/theme/theme";
 import { AdminProvider } from "@/context/admin/AdminContext";
 import { ProjectProvider } from "@/context/projects/ProjectContext";
+import { BudgetProvider } from "@/context/budget/BudgetContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,14 +33,16 @@ export default function RootLayout({ children }) {
       >
         <UserProvider>
           <AdminProvider>
-            <ProjectProvider>
-              <AppRouterCacheProvider>
-                <ThemeProvider theme={theme}>
-                  <CssBaseline />
-                  {children}
-                </ThemeProvider>
-              </AppRouterCacheProvider>
-            </ProjectProvider>
+            <BudgetProvider>
+              <ProjectProvider>
+                <AppRouterCacheProvider>
+                  <ThemeProvider theme={theme}>
+                    <CssBaseline />
+                    {children}
+                  </ThemeProvider>
+                </AppRouterCacheProvider>
+              </ProjectProvider>
+            </BudgetProvider>
           </AdminProvider>
         </UserProvider>
       </body>
